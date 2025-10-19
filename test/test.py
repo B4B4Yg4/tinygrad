@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+
 import numpy as np
-from tensor import Tensor
+from tinygrad.tensor import Tensor
 
 
 def test_tinygrad():

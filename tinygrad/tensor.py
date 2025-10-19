@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from functools import partialmethod
 import numpy as np
 
