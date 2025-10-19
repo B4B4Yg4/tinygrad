@@ -12,7 +12,8 @@ def test_tinygrad():
     outr = out.relu()
     out1 = outr.logsoftmax()
     outm = out1.mul(m)
-    outx = outm.sum()
+    outa = outm.add(m)
+    outx = outa.sum()
     outx.backward()
 
     return outx.data, x.grad, W.grad

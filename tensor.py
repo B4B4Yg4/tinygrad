@@ -114,6 +114,22 @@ class ReLU(Function):
 register("relu", ReLU)
 
 
+class Add(Function):
+
+    @staticmethod
+    def forward(ctx, x, y):
+
+        return x + y
+
+    @staticmethod
+    def backward(ctx, grad_output):
+
+        return grad_output, grad_output
+
+
+register("add", Add)
+
+
 class Dot(Function):
 
     @staticmethod
