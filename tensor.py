@@ -5,8 +5,10 @@ import numpy as np
 # Start with 3 base classes
 class Context:
 
-    def __init__(self):
+    def __init__(self, arg, *tensors):
 
+        self.arg = arg
+        self.parents = tensors
         self.saved_tensors = []
 
     def save_for_backward(self, *x):
@@ -19,18 +21,42 @@ class Tensor:
     def __init__(self, data, _children=()):
 
         self.data = data
-        self.grad = np.zeros_like(data)
+        self.grad = None
         # Internal variables used for autograd graph construction
-        self._prev = set(_children)
+        self._ctx = None
+
+    def __str__(self):
+
+        return f"Tensor of shape {self.data.shape} with grad {self.grad}"
+
+    def backeard(self, allow_fill=True):
+
+        if self._ctx is None:
+            return
+
+        if self.grad is None and allow_fill:
+
+            # fill in the first grad with one
+            assert self.data.size == 1
+            self.grad = np.ones_like(self.data)
+
+        assert self.grad is not None
+
+        grads = self._ctx.arg.backward(self._ctx, self.grad)
+
+        for t, g in zip(self._ctx.parents, grads):
+
+            t.grad = g
+            t.backward(False)
 
 
 class Function:
 
     def apply(self, arg, *x):
 
-        ctx = Context()
-        x = [self] + list(x)
-        ret = Tensor(arg.forward(ctx, *[t.data for t in x]))
+        ctx = Context(arg, self, *x)
+        ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
+        ret._ctx = ctx
 
         return ret
 
@@ -38,6 +64,26 @@ class Function:
 def register(name, function):
 
     setattr(Tensor, name, partialmethod(function.apply, function))
+
+
+class ReLU(Function):
+
+    @staticmethod
+    def forward(ctx, input):
+
+        ctx.save_for_backward(input)
+        return np.maximum(input, 0)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+
+        input, = ctx.saved_tensors
+        grad_input = grad_output.copy()
+        grad_input[input < 0] = 0
+        return grad_input,
+
+
+register("relu", ReLU)
 
 
 class Dot(Function):
@@ -61,7 +107,6 @@ class Dot(Function):
 register("dot", Dot)
 
 
-# Maybe wrong
 class Sum(Function):
 
     @staticmethod
@@ -74,7 +119,7 @@ class Sum(Function):
     def backward(ctx, grad_output):
 
         input = ctx.saved_tensors
-        return grad_output * input
+        return grad_output * np.ones_like(input)
 
 
 register("sum", Sum)
