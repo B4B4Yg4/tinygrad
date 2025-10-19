@@ -18,7 +18,9 @@ class Context:
 
 class Tensor:
 
-    def __init__(self, data, _children=()):
+    def __init__(self, data):
+
+        assert isinstance(data, np.ndarray), f"Error Constructing tensor with {data}"
 
         self.data = data
         self.grad = None
@@ -27,7 +29,7 @@ class Tensor:
 
     def __str__(self):
 
-        return f"Tensor of shape {self.data.shape} with grad {self.grad}"
+        return f"Tensor {self.data} with grad {self.grad}"
 
     def backeard(self, allow_fill=True):
 
@@ -44,7 +46,15 @@ class Tensor:
 
         grads = self._ctx.arg.backward(self._ctx, self.grad)
 
+        if len(self._ctx.parents) == 1:
+            grads = [grads]
+
         for t, g in zip(self._ctx.parents, grads):
+
+            if g.shape != t.data.shape:
+
+                print(f"Grad shape must match tensor shape in {self._ctx.arg}, {g.shape} != {t.data.shape}")
+                assert False
 
             t.grad = g
             t.backward(False)
@@ -80,7 +90,7 @@ class ReLU(Function):
         input, = ctx.saved_tensors
         grad_input = grad_output.copy()
         grad_input[input < 0] = 0
-        return grad_input,
+        return grad_input
 
 
 register("relu", ReLU)
@@ -113,13 +123,38 @@ class Sum(Function):
     def forward(ctx, input):
 
         ctx.save_for_backward(input)
-        return input.sum()
+        return np.array(input.sum())
 
     @staticmethod
     def backward(ctx, grad_output):
 
-        input = ctx.saved_tensors
+        input, = ctx.saved_tensors
         return grad_output * np.ones_like(input)
 
 
 register("sum", Sum)
+
+
+class LogSoftmax(Function):
+
+    @staticmethod
+    def forward(ctx, input):
+
+        def logsumexp(x):
+
+            c = x.max(axis=1)
+            return c + np.log(np.exp(x-c.reshape((-1, 1))).sum(axis=1))
+
+        output = input - logsumexp(input)
+        ctx.save_for_backward(output)
+
+        return output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+
+        output, = ctx.saved_tensors
+        return grad_output - np.exp(output) * grad_output.sum(axis=1).reshape((-1, 1))
+
+
+register("logsoftmax", LogSoftmax)
