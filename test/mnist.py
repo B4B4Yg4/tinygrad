@@ -29,17 +29,17 @@ def fetch(url):
     return np.frombuffer(gzip.decompress(data), dtype=np.uint8).copy()
 
 
-X_train = fetch(
-    "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"
-)[0x10:].reshape((-1, 28, 28))
 Y_train = fetch(
-    "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"
+    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/train-labels-idx1-ubyte.gz"
 )[8:]
+X_train = fetch(
+    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/train-images-idx3-ubyte.gz"
+)[0x10:].reshape((-1, 28, 28))
 X_test = fetch(
-    "http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz"
+    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/t10k-images-idx3-ubyte.gz"
 )[0x10:].reshape((-1, 28, 28))
 Y_test = fetch(
-    "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz"
+    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/t10k-labels-idx1-ubyte.gz"
 )[8:]
 
 
