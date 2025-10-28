@@ -22,7 +22,8 @@ class Tensor:
 
     def __init__(self, data):
 
-        assert isinstance(data, np.ndarray), f"Error Constructing tensor with {data}"
+        if type(data) != np.ndarray:
+            print("error constructing tensor with %r" % data)
 
         self.data = data
         self.grad = None
@@ -60,6 +61,12 @@ class Tensor:
 
             t.grad = g
             t.backward(False)
+
+    def mean(self):
+
+        div = Tensor(np.array([1 / self.data.size]))
+
+        return self.sum().mul(div)
 
 
 class Function:
@@ -159,7 +166,7 @@ class Sum(Function):
     def forward(ctx, input):
 
         ctx.save_for_backward(input)
-        return np.array(input.sum())
+        return np.array([input.sum()])
 
     @staticmethod
     def backward(ctx, grad_output):

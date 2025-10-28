@@ -30,16 +30,16 @@ def fetch(url):
 
 
 Y_train = fetch(
-    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/train-labels-idx1-ubyte.gz"
+    "https://systemds.apache.org/assets/datasets/mnist/train-labels-idx1-ubyte.gz"
 )[8:]
 X_train = fetch(
-    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/train-images-idx3-ubyte.gz"
+    "https://systemds.apache.org/assets/datasets/mnist/train-images-idx3-ubyte.gz"
 )[0x10:].reshape((-1, 28, 28))
 X_test = fetch(
-    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/t10k-images-idx3-ubyte.gz"
+    "https://systemds.apache.org/assets/datasets/mnist/t10k-images-idx3-ubyte.gz"
 )[0x10:].reshape((-1, 28, 28))
 Y_test = fetch(
-    "https://github.com/Rujiyuan/MNIST-Dataset/blob/main/t10k-labels-idx1-ubyte.gz"
+    "https://systemds.apache.org/assets/datasets/mnist/t10k-labels-idx1-ubyte.gz"
 )[8:]
 
 
@@ -71,7 +71,7 @@ for i in (t := trange(1000)):
 
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
 
-    x = Tensor(layer_init(784, 128))
+    x = Tensor(X_train[samp].reshape((-1, 28 * 28)))
     Y = Y_train[samp]
     y = np.zeros((len(samp), 10), np.float32)
     y[range(y.shape[0]), Y] = -1.0
