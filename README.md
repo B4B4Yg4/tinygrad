@@ -15,3 +15,4 @@ print(x.grad)
 print(y.grad)
 ```
 ### Basic MNIST code is working
+### [Video](https://www.youtube.com/watch?v=Xtws3-Pk69o)
