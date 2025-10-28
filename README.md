@@ -14,3 +14,4 @@ z.backward()
 print(x.grad)
 print(y.grad)
 ```
+### Basic MNIST code is working
