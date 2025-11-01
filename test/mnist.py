@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
 import numpy as np
+from tinygrad.optim import SGD
 from tinygrad.tensor import Tensor
-from tinygrad.nn import layer_init, SGD
 from tinygrad.utils import fetch_mnist
 from tqdm import trange
+
+
+def layer_init(m, h):
+
+    ret = np.random.uniform(-1., 1., size=(m, h)) / np.sqrt(m * h)
+    return ret.astype(np.float32)
 
 
 class TinyBobNet:
