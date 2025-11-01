@@ -1,52 +1,10 @@
 #!/usr/bin/env python
 
-import requests
-import os
-import gzip
-import hashlib
 import numpy as np
 from tinygrad.tensor import Tensor
+from tinygrad.nn import layer_init, SGD
+from tinygrad.utils import fetch_mnist
 from tqdm import trange
-
-
-# load the mnist dataset
-def fetch(url):
-
-    fp = os.path.join("/tmp", hashlib.md5(url.encode("utf-8")).hexdigest())
-
-    if os.path.isfile(fp):
-
-        with open(fp, "rb") as f:
-            data = f.read()
-
-    else:
-
-        with open(fp, "wb") as f:
-
-            data = requests.get(url).content
-            f.write(data)
-
-    return np.frombuffer(gzip.decompress(data), dtype=np.uint8).copy()
-
-
-Y_train = fetch(
-    "https://systemds.apache.org/assets/datasets/mnist/train-labels-idx1-ubyte.gz"
-)[8:]
-X_train = fetch(
-    "https://systemds.apache.org/assets/datasets/mnist/train-images-idx3-ubyte.gz"
-)[0x10:].reshape((-1, 28, 28))
-X_test = fetch(
-    "https://systemds.apache.org/assets/datasets/mnist/t10k-images-idx3-ubyte.gz"
-)[0x10:].reshape((-1, 28, 28))
-Y_test = fetch(
-    "https://systemds.apache.org/assets/datasets/mnist/t10k-labels-idx1-ubyte.gz"
-)[8:]
-
-
-def layer_init(m, h):
-
-    ret = np.random.uniform(-1., 1., size=(m, h)) / np.sqrt(m * h)
-    return ret.astype(np.float32)
 
 
 class TinyBobNet:
@@ -61,20 +19,7 @@ class TinyBobNet:
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
 
-# optimizer
-class SGD:
-
-    def __init__(self, tensors, lr):
-
-        self.tensors = tensors
-        self.lr = lr
-
-    def step(self):
-
-        for t in self.tensors:
-            t.data -= self.lr * t.grad
-
-
+X_train, X_test, Y_train, Y_test = fetch_mnist()
 model = TinyBobNet()
 optim = SGD([model.l1, model.l2], lr=0.01)
 
