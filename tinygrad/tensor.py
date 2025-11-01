@@ -4,26 +4,12 @@ from functools import partialmethod
 import numpy as np
 
 
-# Start with 3 base classes
-class Context:
-
-    def __init__(self, arg, *tensors):
-
-        self.arg = arg
-        self.parents = tensors
-        self.saved_tensors = []
-
-    def save_for_backward(self, *x):
-
-        self.saved_tensors.extend(x)
-
-
+# Start with 2 base classes
 class Tensor:
 
     def __init__(self, data):
 
-        if type(data) != np.ndarray:
-            print("error constructing tensor with %r" % data)
+        assert type(data) is np.ndarray, "Error constructing Tensor"
 
         self.data = data
         self.grad = None
@@ -47,7 +33,7 @@ class Tensor:
 
         assert self.grad is not None
 
-        grads = self._ctx.arg.backward(self._ctx, self.grad)
+        grads = self._ctx.backward(self._ctx, self.grad)
 
         if len(self._ctx.parents) == 1:
             grads = [grads]
@@ -56,7 +42,7 @@ class Tensor:
 
             if g.shape != t.data.shape:
 
-                print(f"Grad shape must match tensor shape in {self._ctx.arg}, {g.shape} != {t.data.shape}")
+                print(f"Grad shape must match tensor shape in {self._ctx}, {g.shape} != {t.data.shape}")
                 assert False
 
             t.grad = g
@@ -71,9 +57,18 @@ class Tensor:
 
 class Function:
 
+    def __init__(self, *tensors):
+
+        self.parents = tensors
+        self.saved_tensors = []
+
+    def save_for_backward(self, *x):
+
+        self.saved_tensors.extend(x)
+
     def apply(self, arg, *x):
 
-        ctx = Context(arg, self, *x)
+        ctx = arg(self, *x)
         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
         ret._ctx = ctx
 
