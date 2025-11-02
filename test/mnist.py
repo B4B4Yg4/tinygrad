@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-from tinygrad.optim import SGD
+from tinygrad.optim import SGD, Adam
 from tinygrad.tensor import Tensor
 from tinygrad.utils import fetch_mnist
 from tqdm import trange
@@ -27,7 +27,8 @@ class TinyBobNet:
 
 X_train, X_test, Y_train, Y_test = fetch_mnist()
 model = TinyBobNet()
-optim = SGD([model.l1, model.l2], lr=0.01)
+# optim = SGD([model.l1, model.l2], lr=0.01)
+optim = Adam([model.l1, model.l2], lr=0.01)
 
 BS = 128
 losses, accuracies = [], []
