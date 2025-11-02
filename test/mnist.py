@@ -28,7 +28,7 @@ class TinyBobNet:
 X_train, X_test, Y_train, Y_test = fetch_mnist()
 model = TinyBobNet()
 # optim = SGD([model.l1, model.l2], lr=0.01)
-optim = Adam([model.l1, model.l2], lr=0.01)
+optim = Adam([model.l1, model.l2], lr=0.001)
 
 BS = 128
 losses, accuracies = [], []
